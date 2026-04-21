@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lowville Soil Tracker</title>
+  <meta name="description" content="Spring lawn seeding monitor for Lowville / North Burlington, ON. Live soil and air temperature from Open-Meteo." />
+  <link rel="preconnect" href="https://api.fontshare.com" />
+  <link href="https://api.fontshare.com/v2/css?f[]=general-sans@300,400,500,600,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none' stroke='%232d6a4f' stroke-width='2.25' stroke-linecap='round'><path d='M28 8 v14'/><circle cx='28' cy='26' r='4'/><path d='M14 30 C 14 22, 18 18, 22 18'/><path d='M14 30 C 10 26, 8 22, 10 16 C 14 18, 16 22, 16 26'/><line x1='6' y1='32' x2='34' y2='32' stroke-width='2'/></svg>" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-logo" aria-hidden="true">
+          <svg viewBox="0 0 40 40" width="36" height="36" fill="none" stroke="currentColor" aria-label="Lowville Soil Tracker logo">
+            <path d="M28 8 v14" stroke-width="2.25" stroke-linecap="round" />
+            <circle cx="28" cy="26" r="4" stroke-width="2.25" />
+            <circle cx="28" cy="26" r="1.5" fill="currentColor" stroke="none" />
+            <path d="M14 30 C 14 22, 18 18, 22 18" stroke-width="2.25" stroke-linecap="round" />
+            <path d="M14 30 C 10 26, 8 22, 10 16 C 14 18, 16 22, 16 26" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" />
+            <line x1="6" y1="32" x2="34" y2="32" stroke-width="2" stroke-linecap="round" />
+            <line x1="8" y1="35" x2="32" y2="35" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="2 3" stroke-opacity="0.6" />
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1 class="brand-title">Lowville Soil Tracker</h1>
+          <p class="brand-subtitle">Spring 2026 · Lawn Seeding Monitor · Burlington, ON</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-outline" id="btn-refresh" aria-label="Refresh data">
+          <svg id="refresh-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>
+          <span class="btn-label">Refresh</span>
+        </button>
+        <button class="btn btn-outline btn-icon" id="btn-theme" aria-label="Toggle dark mode">
+          <svg id="theme-icon-moon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg id="theme-icon-sun" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Content -->
+    <main id="main">
+      <!-- Loading skeleton -->
+      <div id="loading" class="loading-state">
+        <div class="skeleton-grid">
+          <div class="skeleton skeleton-card-l"></div>
+          <div class="skeleton-gauges">
+            <div class="skeleton skeleton-card"></div>
+            <div class="skeleton skeleton-card"></div>
+            <div class="skeleton skeleton-card"></div>
+            <div class="skeleton skeleton-card"></div>
+          </div>
+        </div>
+        <div class="skeleton skeleton-chart"></div>
+        <div class="skeleton-bottom">
+          <div class="skeleton skeleton-card-m"></div>
+          <div class="skeleton skeleton-card-m"></div>
+        </div>
+      </div>
+
+      <!-- Error state -->
+      <div id="error" class="error-state" style="display:none">
+        <div class="error-card">
+          <div class="error-icon">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <h3 class="error-title">Data fetch failed</h3>
+          <p class="error-msg">Could not reach the Open-Meteo soil model. Retry in a moment.</p>
+          <button class="btn btn-primary" id="btn-retry">Retry</button>
+        </div>
+      </div>
+
+      <!-- Dashboard content -->
+      <div id="content" style="display:none">
+        <!-- Top row: status + gauges -->
+        <section class="top-row">
+          <div class="card status-card">
+            <div class="status-badge" id="status-badge">
+              <div class="status-circle" id="status-circle">
+                <div class="status-inner-ring"></div>
+                <span class="status-label" id="status-label">—</span>
+              </div>
+              <p class="status-blurb" id="status-blurb">—</p>
+              <ul class="status-reasons" id="status-reasons"></ul>
+              <div class="status-updated" id="status-updated">Last updated · —</div>
+            </div>
+          </div>
+          <div class="gauges">
+            <div class="card gauge-card" id="gauge-surface"></div>
+            <div class="card gauge-card gauge-highlight" id="gauge-seed"></div>
+            <div class="card gauge-card" id="gauge-root"></div>
+            <div class="card gauge-card air-card" id="air-gauge">
+              <span class="gauge-title">Air Temperature</span>
+              <span class="gauge-sublabel">Today's range</span>
+              <div class="air-row">
+                <div class="air-col">
+                  <span class="air-label">Day high</span>
+                  <span class="air-value" id="air-high">—<span class="air-unit">°</span></span>
+                </div>
+                <div class="air-divider"></div>
+                <div class="air-col">
+                  <span class="air-label">Day low</span>
+                  <span class="air-value" id="air-low">—<span class="air-unit">°</span></span>
+                </div>
+              </div>
+              <div class="air-tonight">
+                <span>Upcoming overnight low</span>
+                <span class="air-tonight-value" id="air-tonight">—</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Trend chart -->
+        <section class="card chart-card">
+          <div class="chart-header">
+            <h2 class="chart-title">Soil Temperature Trend</h2>
+            <span class="chart-sub">Past 14 days + 7-day forecast · daily 2 PM reading</span>
+          </div>
+          <div class="chart-canvas-wrap">
+            <canvas id="trend-chart"></canvas>
+          </div>
+        </section>
+
+        <!-- Bottom row: checklist + forecast -->
+        <section class="bottom-row">
+          <div class="card checklist-card">
+            <div class="card-header">
+              <h3 class="card-title">Go / No-Go Checklist</h3>
+              <span class="card-meta"><span id="checklist-met" class="strong">0</span> of <span id="checklist-total">5</span> met</span>
+            </div>
+            <ul class="checklist" id="checklist"></ul>
+          </div>
+          <div class="card forecast-card">
+            <div class="card-header">
+              <h3 class="card-title">7-Day Outlook</h3>
+              <span class="card-meta">Air temp · high / low</span>
+            </div>
+            <ul class="forecast-list" id="forecast-list"></ul>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="app-footer">
+      <span>Data · <span class="strong">Open-Meteo</span> soil model · <span class="strong">Environment Canada</span> Lowville</span>
+      <a href="https://weather.gc.ca/en/location/index.html?coords=43.431%2C-79.904" target="_blank" rel="noopener noreferrer">View Environment Canada forecast →</a>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
