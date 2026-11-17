@@ -1,9 +1,10 @@
-// ===== Lowville Soil Tracker — static (GitHub Pages) =====
+// ===== Lawn Seeding Tracker — static (GitHub Pages) =====
 // All data fetching, computation, and rendering run in the browser.
 // No backend, no build step. Open-Meteo supports CORS.
 
-const LAT = 43.431;
-const LON = -79.904;
+// Approximate location (southern Ontario), rounded to 0.1 degree (about 10 km).
+const LAT = 43.4;
+const LON = -79.9;
 const TZ = "America/Toronto";
 
 const REFRESH_MS = 10 * 60 * 1000; // 10 minutes
@@ -193,7 +194,7 @@ function buildPayload(current, trend) {
   }));
 
   return {
-    location: { name: "Lowville / North Burlington, ON", lat: LAT, lon: LON },
+    location: { name: "Southern Ontario", lat: LAT, lon: LON },
     current: { soilSurface, soil6, soil18, airHigh, airLow, tonightLow },
     status,
     frost: frostRes,

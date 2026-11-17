@@ -1,4 +1,4 @@
-# Lowville Soil Tracker — Static
+# Lawn Seeding Tracker — Static
 
 A fully static version of the soil tracker dashboard that runs entirely in the browser. No backend, no build step.
 
@@ -18,7 +18,7 @@ The dashboard calls the [Open-Meteo forecast API](https://open-meteo.com/) direc
 
 ## Data
 
-- Location: Lowville / North Burlington, ON (lat 43.431, lon -79.904)
+- Location: southern Ontario, Canada (approximate coordinates, rounded to 0.1 degree)
 - Soil temperatures at 0, 6, 18 cm (current + past 14 days + 7-day forecast)
 - Daily high / low air temperatures
 - Auto-refresh every 10 minutes
