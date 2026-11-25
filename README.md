@@ -1,3 +1,5 @@
+Visit the live site: https://robcness.github.io/seed-germination-soil-tracker/
+
 # Lawn Seeding Tracker — Static
 
 A fully static version of the soil tracker dashboard that runs entirely in the browser. No backend, no build step.
